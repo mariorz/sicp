@@ -2,14 +2,16 @@
 ;;Define a procedure that takes three numbers as arguments and returns the sum of the 
 ;;squares of the two larger numbers. 
 
-(define (sq x ) (* x x))
+(define (square x ) (* x x))
 
+(define (sum-of-squares x y)
+  (+ (square x) (square y)))
 
-(define (sum-of-2sq a b c)
+(define (sum-of-2-larg-sqared a b c)
 	(cond
-	[(and (<= a b) (<= a c)) (+ (sq b) (sq c))]		
-	[(and (<= b a) (<= b c)) (+ (sq a) (sq c))]
-	[(and (<= c a) (<= c b)) (+ (sq a) (sq b))]))
+	[(and (<= a b) (<= a c)) (sum-of-squares b c)] 
+	[(and (<= b a) (<= b c)) (sum-of-squares a c)] 
+	[(else (sum-of-squares a b))]))                       
 
 
 
@@ -81,6 +83,13 @@
       (sqrt-iter (improve guess x) 
                  x))) 
 
+
+(define (sqrt-iter2 guess x) 
+  (if (good-enough2? guess x) 
+      guess 
+      (sqrt-iter2 (improve guess x) 
+                 x))) 
+
 ;;A guess is improved by averaging it with the quotient of the radicand and the old guess: 
 (define (improve guess x) 
   (average guess (/ x guess))) 
@@ -93,8 +102,12 @@
 ;;We also have to say what we mean by ``good enough.'' The following will do for illustration, but it is not 
 ;;really a very good test. (See exercise 1.7.) The idea is to improve the answer until it is close enough so that 
 ;;its square differs from the radicand by less than a predetermined tolerance (here 0.001):22 
-(define (good-enough? guess x) 
-  (< (abs (- (square guess) x)) 0.001)) 
+
+;; original version
+(define (good-enough2? guess x) 
+  (< (abs (- (square guess) x)) .001)) 
+
+
 
 ;;Finally, we need a way to get started. For instance, we can always guess that the square root of any 
 ;;number is 1:23
@@ -114,9 +127,9 @@
 ;;uses this kind of end test. Does this work better for small and large numbers? 
 
 
-
-
-
+;; My version just modifies good-enough?
+(define (good-enough? guess x) 
+  (< (abs (- (square guess) x)) (abs (/ x 1000000000)))) 
 
 
 
@@ -130,3 +143,26 @@
 ;;Use this formula to implement a cube-root procedure analogous to the square-root procedure. (In 
 ;;section 1.3.4 we will see how to implement Newton's method in general as an abstraction of these square- 
 ;;root and cube-root procedures.) 
+
+
+(define (sqrt-iter guess x) 
+  (if (good-enough? guess x) 
+      guess 
+      (sqrt-iter (improve guess x) 
+                 x))) 
+
+(define (improve guess x) 
+  (average guess (/ x guess))) 
+
+
+(define (average x y) 
+  (/ (+ x y) 2)) 
+
+
+
+(define (good-enough? guess x) 
+  (< (abs (- (square guess) x)) (abs (/ x 1000000000)))) 
+
+
+(define (sqrt x) 
+  (sqrt-iter 1.0 x)) 
