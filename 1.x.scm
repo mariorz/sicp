@@ -45,7 +45,7 @@
 ;;the consequent or the alternative expression.) 
 
 ;; applicative order loops on itself as the (p) operand never stops beeing re-evaluated
-;; normal order runs into an infinite loop as it never stops expanding,
+
 
 
 
