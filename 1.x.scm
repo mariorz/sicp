@@ -73,7 +73,7 @@
 
 ;; infinite loops! the interpreter uses applicative-order evaluation, which causes the function to recur
 ;; on itself even when the predicate evaluates to false. lesson learned: if needs to be a special form so that
-;; the else-clause doesn´t get evaluated by aplicative-order.
+;; the else-clause doesn't get evaluated by aplicative-order.
 
 
 
