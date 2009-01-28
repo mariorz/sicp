@@ -1,7 +1,5 @@
 
 
-
-
 ;;Exercise 1.3.  
 ;;Define a procedure that takes three numbers as arguments and returns the sum of the 
 ;;squares of the two larger numbers. 
@@ -219,7 +217,15 @@
         (else (A (- x 1)
                  (A x (- y 1))))))
 
-;;What are the values of the following expressions?
+
+(define (ack m n)
+  (cond 
+   ((= m 0) (+ n 1))
+   ((= n 0) (ack (- m 1) 1))
+   (else (ack (- m 1) (ack m (- n 1))))))
+
+
+;; What are the values of the following expressions?
 
 (A 1 10)
 
@@ -227,7 +233,7 @@
 
 (A 3 3)
 
-;;Consider the following procedures, where A is the procedure defined above:
+;; Consider the following procedures, where A is the procedure defined above:
 
 (define (f n) (A 0 n))
 
@@ -238,28 +244,93 @@
 ;; 2**n
 
 (define (h n) (A 2 n))
+   (A 1 (A 2 n-1)
+   (A 1 (A 1 (A 2 n-2)))
 
-;; (A 2 0)
- ((= 0 0) 0)
-;; (A 2 1)
-  2
 
-;; (A 2 2)
-   (A 1 2)
-     4
+;;  (A 2 1)
+;;  2
+
+;;   (A 2 2)
+;;   (A 1 (A 2 1))
+;;   (A 1 2)
+;;   (A 0 (A 1 1))
+;;   (A 0 2)
+;;     4
   
-;; (A 2 3)
-   (A 1 4)
-    16
+;;   (A 2 3)
+;;   (A 1 (A 2 2))
+;;   (A 1 (A 1 (A 2 1)))
+;;   (A 1 (A 1 2))
+;;   (A 1 (A 0 (A 1 1)))
+;;   (A 1 (A 0 2))
+;;   (A 1 4)
+;;   (A 0 (A 1 3))
+;;   (A 0 (A 0 (A 1 2)))
+;;   (A 0 (A 0 (A 0 (A 1 1))))
+;;   (A 0 (A 0 (A 0 2)))
+;;   (A 0 (A 0 4))    
+;;   (A 0 8)
+;;    16
+
+;; (A 2 4)
+;; (A 1 16)
+;;  65536
 
 ;; (A 2 5)
-    (A 1 16)
-     65536
-;; (A 2 6)
-    (A 1 65536)
+;; (A 1 65536)
+ 
 
 
 (define (k n) (* 5 n n))
 
-;;Give concise mathematical definitions for the functions computed by the procedures f, g, and h for positive integer values 
-;;of n. For example, (k n) computes 5n2. 
+
+
+;; Give concise mathematical definitions for the functions computed by the procedures f, g, and h for positive 
+;; integer values of n. For example, (k n) computes 5n2. 
+
+;; Exercise 1.11.  
+;; A function f is defined by the rule that f(n) = n if n<3 and f(n) = f(n - 1) + 2f(n - 2) + 3f(n - 3) if n>= 3. 
+;; Write a procedure that computes f by means of a recursive process. Write a procedure that computes f by means of an 
+;; iterative process.  
+
+
+(define (myf n)
+  (cond 
+   ((< n 3) n)
+   (else (+ (myf (- n 1)) (* 2 (myf (- n 2))) (* 3 (myf (- n 3)))))))
+
+(define (myf2 n)
+  (myf2-iter n 0))
+
+(define (myf2-iter counter sum)
+  (cond
+   ((<= counter 2) sum)
+   (else (myf2-iter (- counter 1) (+ sum (- counter 1) (* 2 (- counter 2)) (* 3 (- counter 3)))))))
+  
+
+;; ex 1.11. Iterative implementation 
+  
+ (define (f n) 
+   (define (iter a b c count) 
+     (if (= count 0) 
+       a 
+       (iter b c (+ c (* 2 b) (* 3 a)) (- count 1)))) 
+   (iter 0 1 2 n)) 
+
+
+;; Exercise 1.12.  
+
+;; The following pattern of numbers is called Pascal's triangle.
+
+;; ...
+
+;; The numbers at the edge of the triangle are all 1, and each number inside the triangle is the sum of the two
+;; numbers above it.35 Write a procedure that computes elements of Pascal's triangle by means of a recursive process. 
+
+(define (pasc x y)
+  (cond
+   ((> x y) 0)
+   ((or (= x 0) (= y 0)) 1)
+   (else (+ (pasc (- x 1) (- y 1)) (pasc x (- y 1))))))
+  
