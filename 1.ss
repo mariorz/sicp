@@ -334,3 +334,269 @@
    ((or (= x 0) (= y 0)) 1)
    (else (+ (pasc (- x 1) (- y 1)) (pasc x (- y 1))))))
   
+
+
+;; 1.22 to 1.28
+
+
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor)
+        (else (find-divisor n (next test-divisor)))))
+
+(define (next n)
+  (if (= n 2) 3 (+ n 2))) 
+
+(define (divides? a b)
+  (= (remainder b a) 0))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+
+
+(define (expmod base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (remainder (square (expmod base (/ exp 2) m))
+                    m))
+        (else
+         (remainder (* base (expmod base (- exp 1) m))
+                    m))))        
+
+
+
+(define (fermat-test n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+  (try-it (+ 1 (random (- n 1)))))
+
+
+(define (fast-prime? n times)
+  (cond ((= times 0) #t)
+        ((fermat-test n) (fast-prime? n (- times 1)))
+        (else #f)))
+
+
+(define (timed-prime-test n)
+  (start-prime-test n (current-milliseconds)))
+
+(define (timed-prime-test-fast n)
+  (start-prime-test-fast n (current-milliseconds)))
+
+(define (start-prime-test n start-time)
+  (if (prime? n)
+      (report-prime (- (current-milliseconds) start-time) n)))
+
+(define (start-prime-test-fast n start-time)
+  (if (fast-prime? n 10)
+      (report-prime (- (current-milliseconds) start-time) n)))
+
+(define (report-prime elapsed-time n)
+  (display n)
+  (display " *** ")
+  (display elapsed-time)
+  (newline))
+
+
+(define (search-for-primes base ciel)
+  (define (iter x y)
+    (timed-prime-test x)
+    (search-for-primes (+ x 2) y))
+  (if (< base ciel)
+      (if (even? base) 
+	  (search-for-primes (+ base 1) ciel)
+	  (iter base ciel))
+      (newline)))
+
+
+
+
+(define (search-for-primes-fast base ciel)
+  (define (iter x y)
+    (timed-prime-test-fast x)
+    (search-for-primes-fast (+ x 2) y))
+  (if (< base ciel)
+      (if (even? base) 
+	  (search-for-primes-fast (+ base 1) ciel)
+	  (iter base ciel))
+      (newline)))
+
+
+
+
+(define sfp search-for-primes)
+(define sfpf search-for-primes-fast)
+
+
+
+(define (sum term a next b)
+  (if (> a b)
+      0
+      (+ (term a)
+         (sum term (next a) next b))))
+
+
+(define (inc n) (+ n 1))
+(define (sum-cubes a b)
+  (sum cube a inc b))
+
+
+(define (pi-sum a b)
+  (define (pi-term x)
+    (/ 1.0 (* x (+ x 2))))
+  (define (pi-next x)
+    (+ x 4))
+  (sum pi-term a pi-next b))
+
+
+(define (integral f a b dx)
+  (define (add-dx x) (+ x dx))
+  (* (sum f (+ a (/ dx 2.0)) add-dx b)
+     dx))
+
+
+
+(define (simp-integral f a b n)
+  (define h (/ (- b a) n))
+  (define (geth x) (+ x (* h n)))
+  (+ (/ h 3)
+     (sum f (+ a (* 0 h)) geth b)))
+   
+     
+  
+
+ (define (round-to-next-even x)
+   (+ x (remainder x 2)))
+ 
+ (define (simpson f a b n)
+   (define fixed-n (round-to-next-even n))
+   (define h (/ (- b a) fixed-n))
+   (define (simpson-term k)
+     (define y (f (+ a (* k h))))
+     (if (or (= k 0) (= k fixed-n))
+         (* 1 y)
+         (if (even? k)
+             (* 2 y)
+             (* 4 y))))
+   (* (/ h 3) (sum simpson-term 0 inc fixed-n)))
+
+
+
+
+
+(define (sum term a next b)
+  (if (> a b)
+      0
+      (+ (term a)
+         (sum term (next a) next b))))
+
+
+
+(define (product term a next b)
+  (if (> a b)
+      1
+      (* (term a)
+         (product term (next a) next b))))
+
+
+
+
+(define (accumulate combiner null-value term a next b)
+  (if (> a b)
+      null-value
+      (combiner 
+       (term a) 
+       (accumulate combiner null-value term (next a) next b))))
+
+
+(define (newsum term a next b)
+  (accumulate + 0 term a next b))
+
+(define (newprod term a next b)
+  (accumulate * 1 term a next b))
+  
+(define (newfactorial n)
+  (newprod identity 1 inc n))
+
+
+(define (sum term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (+ (term a) result))))
+  (iter a 0))
+
+
+(define (product term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (* (term a) result))))
+  (iter a 1))
+
+
+
+(define (accumulate combiner null-value term a next b)
+  (define (iter a result)
+    (if (> a b)
+	result
+	(iter (next a) (combiner (term a) result))))
+  (iter a null-value))
+
+(define (filtered-accumulate combiner null-value term a next b filter)
+  (define (iter a result)
+    (if (> a b)
+	result
+	(iter (next a) (combiner 
+			(if (filter a) 
+			    (term a)
+			    null-value)
+			    result))))
+  (iter a null-value))
+
+
+
+
+(define (prime-squared-sum a b)
+  (filtered-accumulate + 0 square a inc b prime?))
+
+
+(define (sum term a next b)
+  (accumulate + 0 term a next b))
+
+(define (product term a next b)
+  (accumulate * 1 term a next b))
+
+
+(define (factorial n)
+  (product identity 1 inc n))
+
+
+
+(define (identity x) x)
+
+(define (sum-integers a b)
+  (sum identity a inc b))
+
+
+(define (foo n)
+  (if (odd? n)
+      (- n 1)
+      n))
+
+(define (bar n)
+  (if (even? n)
+      (- n 1)
+      n))
+
+(define form-p 
+  (* 
+   (/
+    (product foo 3 inc 100000)
+    (product bar 3 inc 100000))
+   4.0))
