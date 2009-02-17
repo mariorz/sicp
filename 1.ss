@@ -32,7 +32,8 @@
 
 ;;Exercise 1.5.  
 ;;Ben Bitdiddle has invented a test to determine whether the interpreter he is faced with is 
-;;using applicative-order evaluation or normal-order evaluation. He defines the following two procedures: 
+;;using applicative-order evaluation or normal-order evaluation. He defines the following two 
+;;procedures: 
 ;;(define (p) (p)) 
 ;;(define (test x y) 
 ;;  (if (= x 0) 
@@ -40,11 +41,12 @@
 ;;      y)) 
 ;;Then he evaluates the expression 
 ;;(test 0 (p)) 
-;;What behavior will Ben observe with an interpreter that uses applicative-order evaluation? What behavior 
-;;will he observe with an interpreter that uses normal-order evaluation? Explain your answer. (Assume that 
-;;the evaluation rule for the special form if is the same whether the interpreter is using normal or 
-;;applicative order: The predicate expression is evaluated first, and the result determines whether to evaluate 
-;;the consequent or the alternative expression.) 
+;;What behavior will Ben observe with an interpreter that uses applicative-order evaluation? 
+;;What behavior will he observe with an interpreter that uses normal-order evaluation? 
+;;Explain your answer. (Assume that the evaluation rule for the special form if is the same 
+;;whether the interpreter is using normal or applicative order: The predicate expression is 
+;;evaluated first, and the result determines whether to evaluate the consequent or 
+;;the alternative expression.) 
 
 ;; applicative order loops on itself as the (p) operand never stops beeing re-evaluated
 
@@ -54,8 +56,8 @@
 
 ;;Exercise 1.6.  
 ;;Alyssa P. Hacker doesn't see why if needs to be provided as a special form. ``Why can't I 
-;;just define it as an ordinary procedure in terms of cond?'' she asks. Alyssa's friend Eva Lu Ator claims 
-;;this can indeed be done, and she defines a new version of if: 
+;;just define it as an ordinary procedure in terms of cond?'' she asks. Alyssa's friend 
+;;Eva Lu Ator claims this can indeed be done, and she defines a new version of if: 
 ;;(define (new-if predicate then-clause else-clause) 
 ;;  (cond (predicate then-clause) 
 ;;        (else else-clause))) 
@@ -73,23 +75,20 @@
 ;;What happens when Alyssa attempts to use this to compute square roots? Explain. 
 
 
-;; infinite loops! the interpreter uses applicative-order evaluation, which causes the function to recur
-;; on itself even when the predicate evaluates to false. 
-
-
-
-
+;; infinite loops! the interpreter uses applicative-order evaluation, which causes the 
+;;function to recur on itself even when the predicate evaluates to false. 
 
 
 
 ;;Exercise 1.7.  
 ;;The good-enough? test used in computing square roots will not be very effective for 
-;;finding the square roots of very small numbers. Also, in real computers, arithmetic operations are almost 
-;;always performed with limited precision. This makes our test inadequate for very large numbers. Explain 
-;;these statements, with examples showing how the test fails for small and large numbers. An alternative 
-;;strategy for implementing good-enough? is to watch how guess changes from one iteration to the 
-;;next and to stop when the change is a very small fraction of the guess. Design a square-root procedure that 
-;;uses this kind of end test. Does this work better for small and large numbers? 
+;;finding the square roots of very small numbers. Also, in real computers, arithmetic 
+;;operations are almost always performed with limited precision. This makes our test 
+;;inadequate for very large numbers. Explain these statements, with examples showing how 
+;;the test fails for small and large numbers. An alternative strategy for implementing 
+;;good-enough? is to watch how guess changes from one iteration to the 
+;;next and to stop when the change is a very small fraction of the guess. Design a square-root 
+;;procedure that uses this kind of end test. Does this work better for small and large numbers? 
 
 (define (square x) (* x x))
 
@@ -156,14 +155,14 @@
 
 
 ;;Exercise 1.8.  
-;;Newton's method for cube roots is based on the fact that if y is an approximation to the cube 
-;;root of x, then a better approximation is given by the value 
+;;Newton's method for cube roots is based on the fact that if y is an approximation 
+;;to the cube root of x, then a better approximation is given by the value 
 ;;
 ;;(/ (+ (/ x (sq y)) (* y 2)) 3)
 ;;
-;;Use this formula to implement a cube-root procedure analogous to the square-root procedure. (In 
-;;section 1.3.4 we will see how to implement Newton's method in general as an abstraction of these square- 
-;;root and cube-root procedures.) 
+;;Use this formula to implement a cube-root procedure analogous to the square-root procedure.
+;; (In section 1.3.4 we will see how to implement Newton's method in general as an abstraction 
+;;of these square-root and cube-root procedures.) 
 
 (define (sq x) (* x x))
 
@@ -185,8 +184,9 @@
   (cube-iter 1.0 x)) 
 
 
-;;Exercise 1.9.  Each of the following two procedures defines a method for adding two positive integers in terms 
-;;of the procedures inc, which increments its argument by 1, and dec, which decrements its argument by 1.
+;;Exercise 1.9.  Each of the following two procedures defines a method for adding two 
+;;positive integers in terms of the procedures inc, which increments its argument by 1, 
+;;and dec, which decrements its argument by 1.
 
 (define (+ a b)
   (if (= a 0)
@@ -200,7 +200,8 @@
 
 
 
-;;Using the substitution model, illustrate the process generated by each procedure in evaluating (+ 4 5).
+;;Using the substitution model, illustrate the process generated by each procedure in
+;; evaluating (+ 4 5).
 ;; Are these processes iterative or recursive?
 
 ;; first one is recursive, the second is iterative
@@ -208,7 +209,8 @@
 
 
 
-;;Exercise 1.10.  The following procedure computes a mathematical function called Ackermann's function.
+;;Exercise 1.10.  The following procedure computes a mathematical function called 
+;;Ackermann's function.
 
 (define (A x y)
   (cond ((= y 0) 0)
@@ -286,13 +288,14 @@
 
 
 
-;; Give concise mathematical definitions for the functions computed by the procedures f, g, and h for positive 
-;; integer values of n. For example, (k n) computes 5n2. 
+;; Give concise mathematical definitions for the functions computed by the procedures f, g, 
+;; and h for positive integer values of n. For example, (k n) computes 5n2. 
 
 ;; Exercise 1.11.  
-;; A function f is defined by the rule that f(n) = n if n<3 and f(n) = f(n - 1) + 2f(n - 2) + 3f(n - 3) if n>= 3. 
-;; Write a procedure that computes f by means of a recursive process. Write a procedure that computes f by means of an 
-;; iterative process.  
+;; A function f is defined by the rule that 
+;; f(n) = n if n<3 and f(n) = f(n - 1) + 2f(n - 2) + 3f(n - 3) if n>= 3. 
+;; Write a procedure that computes f by means of a recursive process. Write a procedure that 
+;; computes f by means of an iterative process.  
 
 
 (define (myf n)
@@ -325,8 +328,10 @@
 
 ;; ...
 
-;; The numbers at the edge of the triangle are all 1, and each number inside the triangle is the sum of the two
-;; numbers above it.35 Write a procedure that computes elements of Pascal's triangle by means of a recursive process. 
+;; The numbers at the edge of the triangle are all 1, and each number 
+;; inside the triangle is the sum of the two numbers above it.35
+;; Write a procedure that computes elements of Pascal's triangle by 
+;; means of a recursive process. 
 
 (define (pasc x y)
   (cond
@@ -600,3 +605,185 @@
     (product foo 3 inc 100000)
     (product bar 3 inc 100000))
    4.0))
+
+
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (display v1)
+    (newline)
+    (< (abs (- v1 v2)) tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (close-enough? guess next)
+          next
+          (try next))))
+  (try first-guess))
+
+
+(define (sqrt x)
+  (fixed-point (lambda (y) (average y (/ x y)))
+               1.0))
+
+
+(define (average x y)
+  (/ (+ x y) 2))
+
+(define (gr x) (fixed-point (lambda (x) (+ 1 (/ 1 x))) 1.0))
+
+(define (bar x) (fixed-point (lambda (x) (average x (/ (log 1000) (log x)))) 2.0))
+
+
+(define (cont-frac n d k)
+  (define (iter result i)
+    (if (= k i) 
+	result
+	(iter (/ result (+ (d i) (/ (n (+ i 1)) (n (+ i 2))))) (+ i 1))))
+  (iter (n 1) 1))
+    
+
+(define (cont-frac n d k)
+  (if (= k 0) (/ (n k) (d k)) (/ (n k) (+ (d k) (cont-frac n d (- k 1))))))
+      
+
+(define (cont-frac n d k)
+  (define (iter i result)
+    (if (= i k)
+	(/ (n 1) (d i)) 
+	(/ (n i) (+ (d i) (iter (+ i 1))))))
+  iter 1)
+    
+    
+
+;; 1, 2, 1, 1, 4, 1, 1, 6, 1, 1, 8, 1, 1, 10, 1, 1, 12, 1, 1, 14
+;; 0  1  2  3  4  5  6  7  8  9  10 11 12 13  14 15 16  17 18 19
+;; 2  1  2  1  1  4  1  1  6  1  1  8
+;; 1  2  3  4  5  6  7  8  9  10 11 12 13 14  15 16 17  18 19 20    
+ 
+;; 1 3 5 7 9 11 13 15
+;; 1 2 3 4 5 6  7  8
+;; 0 1 2 3 4 5  6  7 
+
+(define (cont-frac n d k oper)
+  (define (cont-frac-inner n d k i)
+    (if (= i k) (/ (n i) (d i)) (/ (n i) (oper (d i) (cont-frac-inner n d k (+ i 1))))))
+  (cont-frac-inner n d k 0))
+
+      
+
+(define (seriesx x)
+  (define (iter a b last-pair i)
+    (if (= i x)
+	b
+	(if (= a b 1) 
+	    (iter b (+ last-pair 2) (+ last-pair 2) (+ i 1)) 
+	    (iter b 1 last-pair (+ i 1))))) 
+  (iter 1 1 0 0))
+
+(define (e x) 
+  (+ 2 (cont-frac (lambda (i) 1.0) seriesx x +))) 
+
+
+
+(define (tan-cf x k)
+  (define (n y)
+    (if (= y 0) x (square x)))
+  (define (d y)
+    (+ (* y 2.0) 1))
+  (cont-frac n d k -)) 
+    
+
+
+
+(define (deriv g)
+  (lambda (x)
+    (/ (- (g (+ x dx)) (g x))
+       dx)))
+
+
+
+(define dx 0.00001)
+
+(define (cube x) (* x x x))
+
+
+
+
+
+(define (newton-transform g)
+  (lambda (x)
+    (- x (/ (g x) ((deriv g) x)))))
+
+(define (newtons-method g guess)
+  (fixed-point (newton-transform g) guess))
+
+(define (sqrt x)
+  (newtons-method (lambda (y) (- (square y) x))
+                  1.0))
+
+
+(define (fixed-point-of-transform g transform guess)
+  (fixed-point (transform g) guess))
+
+
+
+(define (sqrt x)
+  (fixed-point-of-transform (lambda (y) (/ x y))
+                            average-damp
+                            1.0))
+
+
+(define (sqrt x)
+  (fixed-point-of-transform (lambda (y) (- (square y) x))
+                            newton-transform
+                            1.0))
+
+
+(define (cubic a b c)
+  (lambda (x)
+    (+  (cube x)
+        (* a (square x))
+        (* b x)
+        c)))
+
+
+
+(define (cube x) (* x x x))
+(newtons-method (cubic a b c) 1)
+
+(define (double f)
+  (lambda (x)
+    (f (f x))))
+
+(((double (double double)) inc) 5)
+
+
+(define (compose f g)
+  (lambda (x)
+    (f (g x))))
+
+((compose square inc) 6)
+
+
+(define (repeated f n)
+  (lambda (x)
+    (define (iter result i)
+      (if (= n i)
+	  (f result)
+	  (iter (f result) (inc i))))
+    (iter x 1)))
+
+((repeated square 2) 5)
+
+(define (average . x) (/ (apply + x) (length x)))
+
+(define (smooth f)
+  (lambda (x)
+    (average (f (- x dx)) (f x) (f (+ x dx)))))
+
+
+
+  
+
+
+
