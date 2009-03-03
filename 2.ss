@@ -317,3 +317,31 @@
 ;;Exercise 2.13.  Show that under the assumption of small percentage tolerances there is a simple 
 ;;formula for the approximate percentage tolerance of the product of two intervals in terms of the 
 ;;tolerances of the factors. You may simplify the problem by assuming that all numbers are positive. 
+
+
+
+;;Exercise 2.14.  Demonstrate that Lem is right. Investigate the behavior of the system on a variety 
+;;of arithmetic expressions. Make some intervals A and B, and use them in computing the expressions 
+;;A/A and A/B. You will get the most insight by using intervals whose width is a small percentage of 
+;;the center value. Examine the results of the computation in center-percent form (see exercise 2.12).
+
+
+
+
+;;Exercise 2.15.  Eva Lu Ator, another user, has also noticed the different intervals computed by 
+;;different but algebraically equivalent expressions. She says that a formula to compute with intervals 
+;;using Alyssa's system will produce tighter error bounds if it can be written in such a form that no 
+;;variable that represents an uncertain number is repeated. Thus, she says, par2 is a ``better'' program 
+;;for parallel resistances than par1. Is she right? Why?
+
+
+
+
+
+
+
+
+
+;;Exercise 2.16.  Explain, in general, why equivalent algebraic expressions may lead to different 
+;;answers. Can you devise an interval-arithmetic package that does not have this shortcoming, or is this 
+;;task impossible? (Warning: This problem is very difficult.) 
