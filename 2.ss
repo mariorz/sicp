@@ -134,7 +134,7 @@
   (car (cdr r)))
 
 
-;;B) This may be wrong
+;;B) re-check this!
 (define (length-segment l) 
   (sqrt 
    (+ 
@@ -179,10 +179,32 @@
 ;;car, and cdr. 
 
 
+(define (pow a b)
+  (define (iter-pow a b res)
+    (if (> b 0) (iter-pow a (- b 1) (* a res)) res))
+  (iter-pow a b 1))
 
 
+(define (mycons a b)(* (pow 2 a) (pow 3 b)))
+
+(define (factred n test x y)
+  (define (iter n a)
+    (if (> n 1)
+	(if (test n)
+	    (iter (/ n x) (+ a 1))
+	    (iter (/ n y) a))
+	a))
+  (iter n 0))
+	    
+
+(define (mycar z)
+  (factred z even? 2 3))
+
+(define (mycdr z)
+  (factred z odd? 3 2))
 
 
+    
 ;;Exercise 2.6.  In case representing pairs as procedures wasn't mind-boggling enough, 
 ;;consider that, in a language that can manipulate procedures, we can get by without numbers 
 ;;(at least insofar as nonnegative integers are concerned) by implementing 0 and the operation 
@@ -202,7 +224,12 @@
 ;;of repeated application of add-1). 
 
 
-
+(define one (lambda (f) (lambda (x) (f x))))
+ 
+(define two (lambda (f) (lambda (x) (f (f x)))))
+ 
+(define (+ m n)
+  (lambda (f) (lambda (x) ((m f) ((n f) x)))))
 
 
 
@@ -257,9 +284,23 @@
 ;;bounds. The width is a measure of the uncertainty of the number specified by the interval. 
 ;;For some arithmetic operations the width of the result of combining two intervals is a function 
 ;;only of the widths of the argument intervals, whereas for others the width of the combination is 
-;;not a function of the widths of the argument intervals. Show that the width of the sum 
+foo;;not a function of the widths of the argument intervals. Show that the width of the sum 
 ;;(or difference) of two intervals is a function only of the widths of the intervals being added 
 ;;(or subtracted). Give examples to show that this is not true for multiplication or division. 
+
+
+
+
+(define (interval-width z)
+  (/ (- (upper-bound z) (lower-bound z)) 2))
+
+;;x - y = z
+;;a - b = r
+;;(x + a) - (y + b) = z + r
+;;(x + a) - (y + b) = (x - y) + (a - b)
+;;(x + a) - (y + b) = x - y + a - b
+;;(x + a) - (y + b) = (x + a) - y - b
+;;(x + a) - (y + b) = (x + a) - (y + b)
 
 
 
@@ -293,7 +334,7 @@
   (/ (+ (lower-bound i) (upper-bound i)) 2))
 (define (width i)
   (/ (- (upper-bound i) (lower-bound i)) 2))
-
+(/
 
 ;;Exercise 2.12.  Define a constructor make-center-percent that takes a center and a percentage 
 ;;tolerance and produces the desired interval. You must also define a selector percent that 
@@ -311,14 +352,11 @@
 
 
 
-
-
-
 ;;Exercise 2.13.  Show that under the assumption of small percentage tolerances there is a simple 
 ;;formula for the approximate percentage tolerance of the product of two intervals in terms of the 
 ;;tolerances of the factors. You may simplify the problem by assuming that all numbers are positive. 
 
-
+;; (* (* (interval-width interval1) (interval-width interval2)) interval1)
 
 ;;Exercise 2.14.  Demonstrate that Lem is right. Investigate the behavior of the system on a variety 
 ;;of arithmetic expressions. Make some intervals A and B, and use them in computing the expressions 
