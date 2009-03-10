@@ -26,14 +26,11 @@
 (define (denom x) (cdr x))
 
 
-
 (define (print-rat x)
   (newline)
   (display (numer x))
   (display "/")
   (display (denom x)))
-
-
 
 
 (define one-half (make-rat 1 2))
@@ -76,6 +73,10 @@
 ;;midpoint-segment that takes a line segment as argument and returns its midpoint 
 ;;(the point whose coordinates are the average of the coordinates of the endpoints). 
 ;;To try your procedures, you'll need a way to print points:
+
+ 
+     
+
 
 (define (print-point p)
   (newline)
@@ -161,7 +162,7 @@
 
 (define (cons x y)
   (lambda (m) (m x y)))
-(
+
 (define (car z)
   (z (lambda (p q) p)))
 
@@ -284,7 +285,7 @@
 ;;bounds. The width is a measure of the uncertainty of the number specified by the interval. 
 ;;For some arithmetic operations the width of the result of combining two intervals is a function 
 ;;only of the widths of the argument intervals, whereas for others the width of the combination is 
-foo;;not a function of the widths of the argument intervals. Show that the width of the sum 
+;;not a function of the widths of the argument intervals. Show that the width of the sum 
 ;;(or difference) of two intervals is a function only of the widths of the intervals being added 
 ;;(or subtracted). Give examples to show that this is not true for multiplication or division. 
 
@@ -318,14 +319,64 @@ foo;;not a function of the widths of the argument intervals. Show that the width
                                (/ 1.0 (lower-bound y)))))
 
 
+(define (div-interval x y)
+  (if (or (= (lower-bound y) 0)
+          (= (upper-bound y) 0)
+          (and (< (lower-bound y) 0) (> (upper-bound y) 0)))
+      (error "division by zero" y)
+      (mul-interval x
+                    (make-interval (/ 1.0 (upper-bound y))
+                                   (/ 1.0 (lower-bound y)))))
 
-;;--------------------------------------------------------------
+
+
+;;Exercise 2.11.  In passing, Ben also cryptically comments: ``By testing the signs of the endpoints 
+;;of the intervals, it is possible to break mul-interval into nine cases, only one of which requires 
+;;more than two multiplications.'' Rewrite this procedure using Ben's suggestion.
+
+
+
+
+(define (mul-interval x y)
+  (let ((p1 (* (lower-bound x) (lower-bound y)))
+        (p2 (* (lower-bound x) (upper-bound y)))
+        (p3 (* (upper-bound x) (lower-bound y)))
+        (p4 (* (upper-bound x) (upper-bound y))))
+    (make-interval (min p1 p2 p3 p4)
+                   (max p1 p2 p3 p4))))
+
+
+
+(define (mul-interval x y)
+  (let ((lx (lower-bound x))
+        (ux (upper-bound x))
+        (ly (lower-bound y))
+        (uy (upper-bound y)))
+    (cond ((positive? lx) (cond ((positive? ly) (make-interval (* lx ly) (* ux uy)))
+                                ((negative? uy) (make-interval (* ux ly) (* lx uy)))
+                                (else           (make-interval (* ux ly) (* ux uy)))))
+
+          ((negative? ux) (cond ((positive? ly) (make-interval (* lx uy) (* ux ly)))
+                                ((negative? uy) (make-interval (* ux uy) (* lx ly)))
+                                (else           (make-interval (* lx uy) (* lx ly)))))
+
+          (else           (cond ((positive? ly) (make-interval (* lx uy) (* ux uy)))
+                                ((negative? uy) (make-interval (* ux ly) (* lx ly)))
+                                (else
+                                   (make-interval (min (* lx uy) (* ux ly))
+                                                  (max (* lx ly) (* ux uy)))))))))
 
 
 
 
 
 
+
+;;After debugging her program, Alyssa shows it to a potential user, who complains that her program 
+;;solves the wrong problem. He wants a program that can deal with numbers represented as a center 
+;;value and an additive tolerance; for example, he wants to work with intervals such as 3.5± 0.15 rather 
+;;than [3.35, 3.65]. Alyssa returns to her desk and fixes this problem by supplying an alternate 
+;;constructor and alternate selectors:
 
 
 (define (make-center-width c w)
@@ -334,7 +385,12 @@ foo;;not a function of the widths of the argument intervals. Show that the width
   (/ (+ (lower-bound i) (upper-bound i)) 2))
 (define (width i)
   (/ (- (upper-bound i) (lower-bound i)) 2))
-(/
+
+
+;;Unfortunately, most of Alyssa's users are engineers. Real engineering situations usually involve 
+;;measurements with only a small uncertainty, measured as the ratio of the width of the interval to the 
+;;midpoint of the interval. Engineers usually specify percentage tolerances on the parameters of devices, 
+;;as in the resistor specifications given earlier.
 
 ;;Exercise 2.12.  Define a constructor make-center-percent that takes a center and a percentage 
 ;;tolerance and produces the desired interval. You must also define a selector percent that 
@@ -345,9 +401,11 @@ foo;;not a function of the widths of the argument intervals. Show that the width
 (define (make-center-percent c p)
   (make-interval (- c (* c (/ p 100))) (+ c (* c (/ p 100)))))
 
+(define (interval-center i)
+  (/ (+ (lower-bound i) (upper-bound i)) 2))
 
 (define (percent i)
-  (/ (width i) (center i)))
+  (round (* (/ (interval-width i) (interval-center i)) 100)))
 
 
 
@@ -356,14 +414,58 @@ foo;;not a function of the widths of the argument intervals. Show that the width
 ;;formula for the approximate percentage tolerance of the product of two intervals in terms of the 
 ;;tolerances of the factors. You may simplify the problem by assuming that all numbers are positive. 
 
-;; (* (* (interval-width interval1) (interval-width interval2)) interval1)
+
+
+(define (same-tol? i1 i2)
+  (= (percent (mul-interval i1 i2)) (+ (percent i1) (percent i2))))
+
+
+(define (find-min-tols)
+  (define (iter i1 i2)
+    (let ((p1 (percent i1))
+	  (p2 (percent i2)))
+      (if (same-tol? i1 i2)
+	  (and (display p1) (display " <- p1 & p2 -> ") (display p2))
+	  (iter 
+	   (make-center-percent (center i1) (- p1 1))
+	   (make-center-percent (center i2) (- p2 1))))))
+  (iter (make-center-percent 100 100) (make-center-percent 100 100)))
+
+	  
+
+;;After considerable work, Alyssa P. Hacker delivers her finished system. Several years later, after 
+;;she has forgotten all about it, she gets a frenzied call from an irate user, Lem E. Tweakit. It seems 
+;;that Lem has noticed that the formula for parallel resistors can be written in two algebraically 
+;;equivalent ways:
+
+;; (R1 * R2) / (R1 + R2)
+;; and
+;; 1 / ((1 / R1) + (1 / R2))
+
+
+(define (par1 r1 r2)
+  (div-interval (mul-interval r1 r2)
+                (add-interval r1 r2)))
+(define (par2 r1 r2)
+  (let ((one (make-interval 1 1))) 
+    (div-interval one
+                  (add-interval (div-interval one r1)
+                                (div-interval one r2)))))
 
 ;;Exercise 2.14.  Demonstrate that Lem is right. Investigate the behavior of the system on a variety 
 ;;of arithmetic expressions. Make some intervals A and B, and use them in computing the expressions 
 ;;A/A and A/B. You will get the most insight by using intervals whose width is a small percentage of 
 ;;the center value. Examine the results of the computation in center-percent form (see exercise 2.12).
 
+(define A (make-center-percent 10 5))
+(define B (make-center-percent 15 2))
+(par1 foo bar)
+(par2 foo bar)
+(div-interval A A)
+(div-interval B B)
 
+;; we can see here where the error is. Algebraically (A / A), would be 1, however, since we're dealing
+;; with intervals, A could be any number between 10 and 10.5, so it doesn't compute to 1
 
 
 ;;Exercise 2.15.  Eva Lu Ator, another user, has also noticed the different intervals computed by 
@@ -373,13 +475,13 @@ foo;;not a function of the widths of the argument intervals. Show that the width
 ;;for parallel resistances than par1. Is she right? Why?
 
 
-
-
-
-
-
+;; Eva is right, any operation dealing with intervals will increase the error tolerance.
+;; In this case, par3 uses the r1 and r2 forumlas just once. (the interval one is used 3
+;; times but since it's interval-width is 0, it does not affect the result.)
 
 
 ;;Exercise 2.16.  Explain, in general, why equivalent algebraic expressions may lead to different 
 ;;answers. Can you devise an interval-arithmetic package that does not have this shortcoming, or is this 
 ;;task impossible? (Warning: This problem is very difficult.) 
+
+
