@@ -405,7 +405,7 @@
   (/ (+ (lower-bound i) (upper-bound i)) 2))
 
 (define (percent i)
-  (round (* (/ (interval-width i) (interval-center i)) 100)))
+  (* (/ (interval-width i) (interval-center i)) 100.0))
 
 
 
