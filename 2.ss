@@ -44,10 +44,11 @@
 
 
 
-;;Exercise 2.1.  Define a better version of make-rat that handles both positive 
-;;and negative arguments. Make-rat should normalize the sign so that if the rational 
-;;umber is positive, both the numerator and denominator are positive, and if the 
-;;rational number is negative, only the numerator is negative. 
+;;Exercise 2.1.  Define a better version of make-rat that handles both 
+;;positive and negative arguments. Make-rat should normalize the sign so 
+;;that if the rational number is positive, both the numerator and denominator 
+;;are positive, and if the rational number is negative, only the numerator is 
+;;negative. 
 
 
 (define (reduce-frac n d)
@@ -63,19 +64,17 @@
    
 
 
-;;Exercise 2.2.  Consider the problem of representing line segments in a plane. 
-;;Each segment is represented as a pair of points: a starting point and an ending point. 
-;;Define a constructor make-segment and selectors start-segment and end-segment that 
-;;define the representation of segments in terms of points. Furthermore, a point can be 
-;;represented as a pair of numbers: the x coordinate and the y coordinate. Accordingly, 
-;;specify a constructor make-point and selectors x-point and y-point that define this
-;;representation. Finally, using your selectors and constructors, define a procedure 
-;;midpoint-segment that takes a line segment as argument and returns its midpoint 
-;;(the point whose coordinates are the average of the coordinates of the endpoints). 
-;;To try your procedures, you'll need a way to print points:
-
- 
-     
+;;Exercise 2.2.  Consider the problem of representing line segments in a 
+;;plane. Each segment is represented as a pair of points: a starting point 
+;;and an ending point. Define a constructor make-segment and selectors 
+;;start-segment and end-segment that define the representation of segments in 
+;;terms of points. Furthermore, a point can be represented as a pair of 
+;;numbers: the x coordinate and the y coordinate. Accordingly, specify a 
+;;constructor make-point and selectors x-point and y-point that define this 
+;;representation. Finally, using your selectors and constructors, define a 
+;;procedure midpoint-segment that takes a line segment as argument and returns 
+;;its midpoint (the point whose coordinates are the average of the coordinates 
+;;of the endpoints). To try your procedures, you'll need a way to print points:
 
 
 (define (print-point p)
@@ -108,11 +107,12 @@
    (/ (+ (y-point (start-segment l)) (y-point (end-segment l))) 2)))
 
 
-;;Exercise 2.3.  Implement a representation for rectangles in a plane. (Hint: You may 
-;;want to make use of exercise 2.2.) In terms of your constructors and selectors, create 
-;;procedures that compute the perimeter and the area of a given rectangle. Now implement 
-;;a different representation for rectangles. Can you design your system with suitable 
-;;abstraction barriers, so that the same perimeter and area procedures will work using 
+;;Exercise 2.3.  Implement a representation for rectangles in a plane. 
+;;(Hint: You may want to make use of exercise 2.2.) In terms of your 
+;;constructors and selectors, create procedures that compute the perimeter 
+;;and the area of a given rectangle. Now implement a different representation 
+;;for rectangles. Can you design your system with suitable abstraction 
+;;barriers, so that the same perimeter and area procedures will work using 
 ;;either representation? 
 
 
@@ -157,8 +157,9 @@
   
 
 
-;;Exercise 2.4.  Here is an alternative procedural representation of pairs. For this 
-;;representation, verify that (car (cons x y)) yields x for any objects x and y.
+;;Exercise 2.4.  Here is an alternative procedural representation of pairs. 
+;;For this representation, verify that (car (cons x y)) yields x for any 
+;;objects x and y.
 
 (define (cons x y)
   (lambda (m) (m x y)))
@@ -166,18 +167,18 @@
 (define (car z)
   (z (lambda (p q) p)))
 
-;;What is the corresponding definition of cdr? (Hint: To verify that this works, make 
-;;use of the substitution model of section 1.1.5.) 
+;;What is the corresponding definition of cdr? (Hint: To verify that this 
+;;works, make use of the substitution model of section 1.1.5.) 
 
 
 (define (cdr z)
   (z (lambda (p q) q)))
 
 
-;;Exercise 2.5.  Show that we can represent pairs of nonnegative integers using only 
-;;numbers and arithmetic operations if we represent the pair a and b as the integer that 
-;;is the product (2**a)*(3**b) Give the corresponding definitions of the procedures cons, 
-;;car, and cdr. 
+;;Exercise 2.5.  Show that we can represent pairs of nonnegative integers 
+;;using only numbers and arithmetic operations if we represent the pair a and 
+;;b as the integer that is the product (2**a)*(3**b) Give the corresponding 
+;;definitions of the procedures cons, car, and cdr. 
 
 
 (define (pow a b)
@@ -206,10 +207,10 @@
 
 
     
-;;Exercise 2.6.  In case representing pairs as procedures wasn't mind-boggling enough, 
-;;consider that, in a language that can manipulate procedures, we can get by without numbers 
-;;(at least insofar as nonnegative integers are concerned) by implementing 0 and the operation 
-;;of adding 1 as
+;;Exercise 2.6.  In case representing pairs as procedures wasn't mind-boggling 
+;;enough, consider that, in a language that can manipulate procedures, we can 
+;;get by without numbers (at least insofar as nonnegative integers are 
+;;concerned) by implementing 0 and the operation of adding 1 as
 
 (define zero (lambda (f) (lambda (x) x)))
 
@@ -217,12 +218,12 @@
   (lambda (f) (lambda (x) (f ((n f) x)))))
 
 
-;;This representation is known as Church numerals, after its inventor, Alonzo Church, the 
-;;logician who invented the calculus.
+;;This representation is known as Church numerals, after its inventor, 
+;;Alonzo Church, the logician who invented the calculus.
 
-;;Define one and two directly (not in terms of zero and add-1). (Hint: Use substitution to 
-;;evaluate (add-1 zero)). Give a direct definition of the addition procedure + (not in terms
-;;of repeated application of add-1). 
+;;Define one and two directly (not in terms of zero and add-1). 
+;;(Hint: Use substitution to evaluate (add-1 zero)). Give a direct definition 
+;;of the addition procedure + (not in terms of repeated application of add-1). 
 
 
 (define one (lambda (f) (lambda (x) (f x))))
@@ -259,8 +260,9 @@
 
 
 
-;;Exercise 2.7.  Alyssa's program is incomplete because she has not specified the implementation
-;;of the interval abstraction. Here is a definition of the interval constructor:
+;;Exercise 2.7.  Alyssa's program is incomplete because she has not 
+;;specified the implementation of the interval abstraction. Here is a 
+;;definition of the interval constructor:
 
 (define (make-interval a b) (cons a b))
 
@@ -272,8 +274,9 @@
 
 
 
-;;Exercise 2.8.  Using reasoning analogous to Alyssa's, describe how the difference of two 
-;;intervals may be computed. Define a corresponding subtraction procedure, called sub-interval. 
+;;Exercise 2.8.  Using reasoning analogous to Alyssa's, describe how the 
+;;difference of two intervals may be computed. Define a corresponding 
+;;subtraction procedure, called sub-interval. 
 
 (define (sub-interval x y)
   (make-interval (- (lower-bound x) (upper-bound y))
@@ -281,13 +284,15 @@
 
 
 
-;;Exercise 2.9.  The width of an interval is half of the difference between its upper and lower 
-;;bounds. The width is a measure of the uncertainty of the number specified by the interval. 
-;;For some arithmetic operations the width of the result of combining two intervals is a function 
-;;only of the widths of the argument intervals, whereas for others the width of the combination is 
-;;not a function of the widths of the argument intervals. Show that the width of the sum 
-;;(or difference) of two intervals is a function only of the widths of the intervals being added 
-;;(or subtracted). Give examples to show that this is not true for multiplication or division. 
+;;Exercise 2.9.  The width of an interval is half of the difference between 
+;;its upper and lower bounds. The width is a measure of the uncertainty of 
+;;the number specified by the interval. For some arithmetic operations the 
+;;width of the result of combining two intervals is a function only of the 
+;;widths of the argument intervals, whereas for others the width of the 
+;;combination is not a function of the widths of the argument intervals. 
+;;Show that the width of the sum (or difference) of two intervals is a 
+;;function only of the widths of the intervals being added (or subtracted). 
+;;Give examples to show that this is not true for multiplication or division. 
 
 
 
@@ -306,9 +311,10 @@
 
 
 
-;;Exercise 2.10.  Ben Bitdiddle, an expert systems programmer, looks over Alyssa's shoulder and 
-;;comments that it is not clear what it means to divide by an interval that spans zero. 
-;;Modify Alyssa's code to check for this condition and to signal an error if it occurs. 
+;;Exercise 2.10.  Ben Bitdiddle, an expert systems programmer, looks over 
+;;Alyssa's shoulder and comments that it is not clear what it means to 
+;;divide by an interval that spans zero. Modify Alyssa's code to check for 
+;;this condition and to signal an error if it occurs. 
 
 
 
@@ -330,9 +336,10 @@
 
 
 
-;;Exercise 2.11.  In passing, Ben also cryptically comments: ``By testing the signs of the endpoints 
-;;of the intervals, it is possible to break mul-interval into nine cases, only one of which requires 
-;;more than two multiplications.'' Rewrite this procedure using Ben's suggestion.
+;;Exercise 2.11.  In passing, Ben also cryptically comments: ``By testing 
+;;the signs of the endpoints of the intervals, it is possible to break 
+;;mul-interval into nine cases, only one of which requires more than two 
+;;multiplications. Rewrite this procedure using Ben's suggestion.
 
 
 
@@ -347,24 +354,36 @@
 
 
 
+
 (define (mul-interval x y)
   (let ((lx (lower-bound x))
         (ux (upper-bound x))
         (ly (lower-bound y))
         (uy (upper-bound y)))
-    (cond ((positive? lx) (cond ((positive? ly) (make-interval (* lx ly) (* ux uy)))
-                                ((negative? uy) (make-interval (* ux ly) (* lx uy)))
-                                (else           (make-interval (* ux ly) (* ux uy)))))
+    (cond ((positive? lx) 
+	   (cond ((positive? ly) 
+		  (make-interval (* lx ly) (* ux uy)))
+		 ((negative? uy) 
+		  (make-interval (* ux ly) (* lx uy)))
+		 (else           
+		  (make-interval (* ux ly) (* ux uy)))))
 
-          ((negative? ux) (cond ((positive? ly) (make-interval (* lx uy) (* ux ly)))
-                                ((negative? uy) (make-interval (* ux uy) (* lx ly)))
-                                (else           (make-interval (* lx uy) (* lx ly)))))
+	  ((negative? ux) 
+	   (cond ((positive? ly) 
+		  (make-interval (* lx uy) (* ux ly)))
+		 ((negative? uy) 
+		  (make-interval (* ux uy) (* lx ly)))
+		 (else           
+		  (make-interval (* lx uy) (* lx ly)))))
 
-          (else           (cond ((positive? ly) (make-interval (* lx uy) (* ux uy)))
-                                ((negative? uy) (make-interval (* ux ly) (* lx ly)))
-                                (else
-                                   (make-interval (min (* lx uy) (* ux ly))
-                                                  (max (* lx ly) (* ux uy)))))))))
+	  (else          
+	   (cond ((positive? ly) 
+		  (make-interval (* lx uy) (* ux uy)))
+		 ((negative? uy) 
+		  (make-interval (* ux ly) (* lx ly)))
+		 (else
+		  (make-interval (min (* lx uy) (* ux ly))
+				 (max (* lx ly) (* ux uy)))))))))
 
 
 
@@ -372,11 +391,12 @@
 
 
 
-;;After debugging her program, Alyssa shows it to a potential user, who complains that her program 
-;;solves the wrong problem. He wants a program that can deal with numbers represented as a center 
-;;value and an additive tolerance; for example, he wants to work with intervals such as 3.5± 0.15 rather 
-;;than [3.35, 3.65]. Alyssa returns to her desk and fixes this problem by supplying an alternate 
-;;constructor and alternate selectors:
+;;After debugging her program, Alyssa shows it to a potential user, who 
+;;complains that her program solves the wrong problem. He wants a program 
+;;that can deal with numbers represented as a center value and an additive 
+;;tolerance; for example, he wants to work with intervals such as 3.5± 0.15 
+;;rather than [3.35, 3.65]. Alyssa returns to her desk and fixes this 
+;;problem by supplying an alternate constructor and alternate selectors:
 
 
 (define (make-center-width c w)
@@ -387,14 +407,16 @@
   (/ (- (upper-bound i) (lower-bound i)) 2))
 
 
-;;Unfortunately, most of Alyssa's users are engineers. Real engineering situations usually involve 
-;;measurements with only a small uncertainty, measured as the ratio of the width of the interval to the 
-;;midpoint of the interval. Engineers usually specify percentage tolerances on the parameters of devices, 
-;;as in the resistor specifications given earlier.
+;;Unfortunately, most of Alyssa's users are engineers. Real engineering 
+;;situations usually involve measurements with only a small uncertainty, 
+;;measured as the ratio of the width of the interval to the midpoint of the 
+;;interval. Engineers usually specify percentage tolerances on the parameters 
+;;of devices, as in the resistor specifications given earlier.
 
-;;Exercise 2.12.  Define a constructor make-center-percent that takes a center and a percentage 
-;;tolerance and produces the desired interval. You must also define a selector percent that 
-;;produces the percentage tolerance for a given interval. The center selector is the same as the 
+;;Exercise 2.12.  Define a constructor make-center-percent that takes a center 
+;;and a percentage tolerance and produces the desired interval. You must also 
+;;define a selector percent that produces the percentage tolerance for a given 
+;;interval. The center selector is the same as the 
 ;;one shown above.
 
 
@@ -410,9 +432,11 @@
 
 
 
-;;Exercise 2.13.  Show that under the assumption of small percentage tolerances there is a simple 
-;;formula for the approximate percentage tolerance of the product of two intervals in terms of the 
-;;tolerances of the factors. You may simplify the problem by assuming that all numbers are positive. 
+;;Exercise 2.13.  Show that under the assumption of small percentage 
+;;tolerances there is a simple formula for the approximate percentage 
+;;tolerance of the product of two intervals in terms of the tolerances of the 
+;;factors. You may simplify the problem by assuming that all numbers are 
+;;positive. 
 
 
 
@@ -433,10 +457,11 @@
 
 	  
 
-;;After considerable work, Alyssa P. Hacker delivers her finished system. Several years later, after 
-;;she has forgotten all about it, she gets a frenzied call from an irate user, Lem E. Tweakit. It seems 
-;;that Lem has noticed that the formula for parallel resistors can be written in two algebraically 
-;;equivalent ways:
+;;After considerable work, Alyssa P. Hacker delivers her finished system. 
+;;Several years later, after she has forgotten all about it, she gets a 
+;;frenzied call from an irate user, Lem E. Tweakit. It seems that Lem has 
+;;noticed that the formula for parallel resistors can be written in two 
+;;algebraically equivalent ways:
 
 ;; (R1 * R2) / (R1 + R2)
 ;; and
@@ -452,10 +477,12 @@
                   (add-interval (div-interval one r1)
                                 (div-interval one r2)))))
 
-;;Exercise 2.14.  Demonstrate that Lem is right. Investigate the behavior of the system on a variety 
-;;of arithmetic expressions. Make some intervals A and B, and use them in computing the expressions 
-;;A/A and A/B. You will get the most insight by using intervals whose width is a small percentage of 
-;;the center value. Examine the results of the computation in center-percent form (see exercise 2.12).
+;;Exercise 2.14.  Demonstrate that Lem is right. Investigate the behavior of 
+;;the system on a variety of arithmetic expressions. Make some intervals A and 
+;;B, and use them in computing the expressions A/A and A/B. You will get the 
+;;most insight by using intervals whose width is a small percentage of the 
+;;center value. Examine the results of the computation in center-percent form 
+;;(see exercise 2.12).
 
 (define A (make-center-percent 10 5))
 (define B (make-center-percent 15 2))
@@ -464,24 +491,160 @@
 (div-interval A A)
 (div-interval B B)
 
-;; we can see here where the error is. Algebraically (A / A), would be 1, however, since we're dealing
-;; with intervals, A could be any number between 10 and 10.5, so it doesn't compute to 1
+;; we can see here where the error is. Algebraically (A / A), would be 1, 
+;;however, since we're dealing with intervals, A could be any number between 
+;;10 and 10.5, so it doesn't compute to 1
 
 
-;;Exercise 2.15.  Eva Lu Ator, another user, has also noticed the different intervals computed by 
-;;different but algebraically equivalent expressions. She says that a formula to compute with intervals 
-;;using Alyssa's system will produce tighter error bounds if it can be written in such a form that no 
-;;variable that represents an uncertain number is repeated. Thus, she says, par2 is a ``better'' program 
-;;for parallel resistances than par1. Is she right? Why?
+;;Exercise 2.15.  Eva Lu Ator, another user, has also noticed the different 
+;;intervals computed by different but algebraically equivalent expressions. 
+;;She says that a formula to compute with intervals using Alyssa's system will 
+;;produce tighter error bounds if it can be written in such a form that no 
+;;variable that represents an uncertain number is repeated. Thus, she says, 
+;;par2 is a ``better'' program for parallel resistances than par1. Is she 
+;;right? Why?
 
 
-;; Eva is right, any operation dealing with intervals will increase the error tolerance.
-;; In this case, par3 uses the r1 and r2 forumlas just once. (the interval one is used 3
-;; times but since it's interval-width is 0, it does not affect the result.)
+;; Eva is right, any operation dealing with intervals will increase the error 
+;;tolerance.
+;;In this case, par3 uses the r1 and r2 forumlas just once. (the interval one 
+;;is used 3 times but since it's interval-width is 0, it does not affect the 
+;;result.)
 
 
-;;Exercise 2.16.  Explain, in general, why equivalent algebraic expressions may lead to different 
-;;answers. Can you devise an interval-arithmetic package that does not have this shortcoming, or is this 
-;;task impossible? (Warning: This problem is very difficult.) 
+;;Exercise 2.16.  Explain, in general, why equivalent algebraic expressions 
+;;may lead to different answers. Can you devise an interval-arithmetic package 
+;;that does not have this shortcoming, or is this task impossible? (Warning: 
+;;This problem is very difficult.) 
 
 
+;;Exercise 2.17.  Define a procedure last-pair that returns the list that 
+;;contains only the last element of a given (nonempty) list:
+
+
+(define (last-pair l)
+  (define (iter a item)
+    (if (null? a)
+	item
+	(iter (cdr a) (car a))))
+  (iter l (car l)))
+
+
+;;Exercise 2.18.  Define a procedure reverse that takes a list as argument 
+;;and returns a list of the same elements in reverse order:
+
+
+(define (but-last l)
+  (define (iter l1 l2)
+    (if (null? (cdr l1))
+	l2
+	(iter (cdr l1) (append 
+			l2 
+			(if (list? (car l1)) (car l1) (list (car l1)))))))
+  (iter l (list)))
+      
+
+
+(define (reverse l)
+  (define (iter l1 l2)
+    (if (null? l1)
+	l2
+	(iter (but-last l1) (append l2 (list (last-pair l1))))))
+  (iter l (list)))
+    
+
+
+(define (count-change amount)
+  (cc amount 5))
+(define (cc amount kinds-of-coins)
+  (cond ((= amount 0) 1)
+        ((or (< amount 0) (= kinds-of-coins 0)) 0)
+        (else (+ (cc amount
+                     (- kinds-of-coins 1))
+                 (cc (- amount
+                        (first-denomination kinds-of-coins))
+                     kinds-of-coins)))))
+(define (first-denomination kinds-of-coins)
+  (cond ((= kinds-of-coins 1) 1)
+        ((= kinds-of-coins 2) 5)
+        ((= kinds-of-coins 3) 10)
+        ((= kinds-of-coins 4) 25)
+        ((= kinds-of-coins 5) 50)))
+
+
+
+;;Exercise 2.19.  Consider the change-counting program of section 1.2.2. 
+;;It would be nice to be able to easily change the currency used by the 
+;;program, so that we could compute the number of ways to change a British 
+;;pound, for example. As the program is written, the knowledge of the currency 
+;;is distributed partly into the procedure first-denomination and partly into 
+;;the procedure count-change (which knows that there are five kinds of U.S. 
+;;coins). It would be nicer to be able to supply a list of coins to be used 
+;;for making change.
+
+;;We want to rewrite the procedure cc so that its second argument is a list 
+;;of the values of the coins to use rather than an integer specifying which 
+;;coins to use. We could then have lists that defined each kind of currency:
+
+(define us-coins (list 50 25 10 5 1))
+(define uk-coins (list 100 50 20 10 5 2 1 0.5))
+
+;;We could then call cc as follows:
+
+(cc 100 us-coins)
+292
+
+;;To do this will require changing the program cc somewhat. It will still 
+;;have the same form, but it will access its second argument differently, as 
+;;follows:
+
+(define (cc amount coin-values)
+  (cond ((= amount 0) 1)
+        ((or (< amount 0) (no-more? coin-values)) 0)
+        (else
+         (+ (cc amount
+                (except-first-denomination coin-values))
+            (cc (- amount
+                   (first-denomination coin-values))
+                coin-values)))))
+
+;;Define the procedures first-denomination, except-first-denomination, and 
+;;no-more? in terms of primitive operations on list structures. Does the order 
+;;of the list coin-values affect the answer produced by cc? Why or why not?
+
+
+
+;;Exercise 2.20.  The procedures +, *, and list take arbitrary numbers of 
+;;arguments. One way to define such procedures is to use define with 
+;;dotted-tail notation. In a procedure definition, a parameter list that has 
+;;a dot before the last parameter name indicates that, when the procedure is 
+;;called, the initial parameters (if any) will have as values the initial 
+;;arguments, as usual, but the final parameter's value will be a list of any 
+;;remaining arguments. For instance, given the definition
+
+(define (f x y . z) <body>)
+
+;;the procedure f can be called with two or more arguments. If we evaluate
+
+;;(f 1 2 3 4 5 6)
+
+;;then in the body of f, x will be 1, y will be 2, and z will be the list 
+;;(3 4 5 6). Given the definition
+
+(define (g . w) <body>)
+
+;;the procedure g can be called with zero or more arguments. If we evaluate
+
+(g 1 2 3 4 5 6)
+
+;;then in the body of g, w will be the list (1 2 3 4 5 6).11
+
+;;Use this notation to write a procedure same-parity that takes one or more 
+;;integers and returns a list of all the arguments that have the same even-odd 
+;;parity as the first argument. For example,
+
+(same-parity 1 2 3 4 5 6 7)
+(1 3 5 7)
+
+(same-parity 2 3 4 5 6 7)
+(2 4 6)
