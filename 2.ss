@@ -518,6 +518,25 @@
 ;;This problem is very difficult.) 
 
 
+(define (list-ref items n)
+  (if (= n 0)
+      (car items)
+      (list-ref (cdr items) (- n 1))))
+
+
+(define (length items)
+  (define (length-iter a count)
+    (if (null? a)
+        count
+        (length-iter (cdr a) (+ 1 count))))
+  (length-iter items 0))
+
+;; this gives an error when trying to car a non list
+(define (append list1 list2)
+  (if (null? list1)
+      list2
+      (cons (car list1) (append (cdr list1) list2))))
+
 ;;Exercise 2.17.  Define a procedure last-pair that returns the list that 
 ;;contains only the last element of a given (nonempty) list:
 
@@ -534,22 +553,21 @@
 ;;and returns a list of the same elements in reverse order:
 
 
+
 (define (but-last l)
-  (define (iter l1 l2)
-    (if (null? (cdr l1))
-	l2
-	(iter (cdr l1) (append 
-			l2 
-			(if (list? (car l1)) (car l1) (list (car l1)))))))
+  (define (iter a b)
+    (if (null? (cdr a))
+	b
+	(iter (cdr a) (append b (list (car a))))))
   (iter l (list)))
       
 
 
 (define (reverse l)
-  (define (iter l1 l2)
-    (if (null? l1)
-	l2
-	(iter (but-last l1) (append l2 (list (last-pair l1))))))
+  (define (iter a b)
+    (if (null? a)
+	b
+	(iter (but-last a) (append b (list (last-pair a))))))
   (iter l (list)))
     
 
