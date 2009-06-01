@@ -394,7 +394,7 @@
 ;;After debugging her program, Alyssa shows it to a potential user, who 
 ;;complains that her program solves the wrong problem. He wants a program 
 ;;that can deal with numbers represented as a center value and an additive 
-;;tolerance; for example, he wants to work with intervals such as 3.5� 0.15 
+;;tolerance; for example, he wants to work with intervals such as 3.5± 0.15 
 ;;rather than [3.35, 3.65]. Alyssa returns to her desk and fixes this 
 ;;problem by supplying an alternate constructor and alternate selectors:
 
@@ -1620,10 +1620,23 @@ x
 ;;seeing whether it is the same as the original sample message. 
 
 
+(define (encode-symbol symbol tree)
+  (define (encode-symbol-iter symbol sub-tree)
+    (cond ((leaf? sub-tree) '())
+          ((element-of-set? symbol (symbols (left-branch sub-tree)))
+               (cons '0 (encode-symbol-iter symbol (left-branch sub-tree))))
+          ((element-of-set? symbol (symbols (right-branch sub-tree)))
+               (cons '1 (encode-symbol-iter symbol (right-branch sub-tree))))
+          (else (error "error not present"))))
+  (if (element-of-set? symbol (symbols tree))
+      (encode-symbol-iter symbol tree)
+      (error "error not present")))
 
 
-
-
+(define (element-of-set? symbol set)
+  (cond ((null? set) #f)
+        ((eq? symbol (car set)) #t)
+        (else (element-of-set? symbol (cdr set)))))
 
 
 
@@ -1686,6 +1699,19 @@ x
 ;;would be needed to encode this song if we used a fixed-length code for the eight-symbol 
 ;;alphabet? 
 
+;;(display encoded-message) (newline)
+;;(
+;;1 1 1 1 1 1 1 0 
+;;0 1 1 1 1 0 1 1 
+;;1 0 0 0 0 0 0 0 
+;;0 0 1 1 1 1 1 1 
+;;1 0 0 1 1 1 1 0 
+;;1 1 1 0 0 0 0 0 
+;;0 0 0 0 1 1 0 1 
+;;0 1 0 1 0 1 0 1 
+;;0 1 0 1 0 1 0 1 
+;;0 1 0 1 1 1 0 1 
+;;1 0 1 1)> 
 
 
 ;;Exercise 2.71.  Suppose we have a Huffman tree for an alphabet of n symbols, and that the 
@@ -1693,9 +1719,816 @@ x
 ;;In such a tree (for general n) how may bits are required to encode the most frequent symbol? 
 ;;the least frequent symbol?
 
+
+
+
+
 ;;Exercise 2.72.  Consider the encoding procedure that you designed in exercise 2.68. What is the 
 ;;order of growth in the number of steps needed to encode a symbol? Be sure to include the number 
 ;;of steps needed to search the symbol list at each node encountered. To answer this question in 
 ;;general is difficult. Consider the special case where the relative frequencies of the n symbols 
 ;;are as described in exercise 2.71, and give the order of growth (as a function of n) of the number 
 ;;of steps needed to encode the most frequent and least frequent symbols in the alphabet. 
+
+
+
+
+;;Exercise 2.73.  Section 2.3.2 described a program that performs symbolic differentiation:
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ((sum? exp)
+         (make-sum (deriv (addend exp) var)
+                   (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+           (make-product (multiplier exp)
+                         (deriv (multiplicand exp) var))
+           (make-product (deriv (multiplier exp) var)
+                         (multiplicand exp))))
+        <more rules can be added here>
+        (else (error "unknown expression type -- DERIV" exp))))
+
+
+;;We can regard this program as performing a dispatch on the type of the expression to be 
+;;differentiated. In this situation the ``type tag'' of the datum is the algebraic operator 
+;;symbol (such as +) and the operation being performed is deriv. We can transform this 
+;;program into data-directed style by rewriting the basic derivative procedure as
+
+(define (deriv exp var)
+   (cond ((number? exp) 0)
+         ((variable? exp) (if (same-variable? exp var) 1 0))
+         (else ((get 'deriv (operator exp)) (operands exp)
+                                            var))))
+(define (operator exp) (car exp))
+(define (operands exp) (cdr exp))
+
+;;a.  Explain what was done above. Why can't we assimilate the predicates number? and same-variable? 
+;;into the data-directed dispatch?
+
+;;because they are not operations, there would be no point.
+
+;;b.  Write the procedures for derivatives of sums and products, and the auxiliary code required 
+;;to install them in the table used by the program above.
+
+
+(define (install-sumandprod-package)
+  ;; internal procedures
+  (define (make-sum a1 a2) (list '+ a1 a2))
+  (define (make-product m1 m2) (list '* m1 m2))
+  (define (addend s) (cadr s))
+  (define (augend s) (caddr s))
+  (define (multiplier p) (cadr p))
+  (define (multiplicand p) (caddr p))
+  
+  (define (d-sum exp)
+    (make-sum (deriv (addend exp) var)
+                   (deriv (augend exp) var)))
+  
+  (define (d-prod exp)
+    (make-sum
+           (make-product (multiplier exp)
+                         (deriv (multiplicand exp) var))
+           (make-product (deriv (multiplier exp) var)
+                         (multiplicand exp))))
+ 
+ 
+  (put 'deriv '+ d-sum)
+  (put 'deriv '* d-prod))
+  
+
+;;c.  Choose any additional differentiation rule that you like, such as the one for exponents 
+;;(exercise 2.56), and install it in this data-directed system.
+
+
+
+(define (install-exponents-package)
+  (define (base x) (cadr x))
+  (define (exponent x) (caddr x))
+  (define (make-sum a1 a2) (list '+ a1 a2))
+  (define (make-product m1 m2) (list '* m1 m2))
+  (define (pow a b)
+    (define (iter-pow a b res)
+      (if (> b 0) (iter-pow a (- b 1) (* a res)) res))
+    (iter-pow a b 1))
+
+  (define (make-exponentiation b e)
+    (cond ((=number? e 0) 1)
+	  ((=number? e 1) b)
+	  ((and (number? b) (number? e)) (pow b e))
+	  (else (list '** b e))))
+
+  (define (d-exponentiation exp)
+    (let 
+	((n (exponent exp))
+	 (u (base exp)))
+      (make-product
+       (make-product n
+		     (make-exponentiation u
+					  (make-sum n -1)))
+       (deriv u var))))
+    
+
+   (put 'deriv '** d-exponentiation))
+
+
+
+;;d.  In this simple algebraic manipulator the type of an expression is the algebraic operator 
+;;that binds it together. Suppose, however, we indexed the procedures in the opposite way, so that 
+;;the dispatch line in deriv looked like
+
+((get (operator exp) 'deriv) (operands exp) var)
+
+;;What corresponding changes to the derivative system are required?
+
+;; the parameters for the put operation would need to be inverted as well, that is all;
+
+
+;;Exercise 2.74.  Insatiable Enterprises, Inc., is a highly decentralized conglomerate company 
+;;consisting of a large number of independent divisions located all over the world. The company's 
+;;computer facilities have just been interconnected by means of a clever network-interfacing scheme 
+;;that makes the entire network appear to any user to be a single computer. Insatiable's president, 
+;;in her first attempt to exploit the ability of the network to extract administrative information 
+;;from division files, is dismayed to discover that, although all the division files have been 
+;implemented as data structures in Scheme, the particular data structure used varies from division to 
+;;division. A meeting of division managers is hastily called to search for a strategy to integrate 
+;;the files that will satisfy headquarters' needs while preserving the existing autonomy of the 
+;;divisions.
+
+;;Show how such a strategy can be implemented with data-directed programming. As an example, 
+;;suppose that each division's personnel records consist of a single file, which contains a set 
+;;of records keyed on employees' names. The structure of the set varies from division to division. 
+;;Furthermore, each employee's record is itself a set (structured differently from division to 
+;;division) that contains information keyed under identifiers such as address and salary. 
+;;In particular:
+
+;;a.  Implement for headquarters a get-record procedure that retrieves a specified employee's 
+;;record from a specified personnel file. The procedure should be applicable to any division's 
+;;file. Explain how the individual divisions' files should be structured. In particular, what type 
+;;information must be supplied?
+
+
+(define (get-record name records)
+  ((get 'get-record (get-division records)) records))
+
+
+;; each division can structure the records as it requires
+;; as long as they provide a "division indentification number" as the car
+;; of their record set (this is to be accessed by get-division)
+;; also they need to install their packages for operations on their specific
+;; structures
+  
+
+
+;;b.  Implement for headquarters a get-salary procedure that returns the salary information from 
+;;a given employee's record from any division's personnel file. How should the record be structured 
+;;in order to make this operation work?
+
+;; 
+(define (get-salary file)
+  ((get 'get-salary (get-division file)) file))
+
+(define (get-division file)
+  (car file))
+
+;; the car of the personnel file must include the division id number
+
+
+;;c.  Implement for headquarters a find-employee-record procedure. This should search all the 
+;;divisions' files for the record of a given employee and return the record. Assume that this 
+;;procedure takes as arguments an employee's name and a list of all the divisions' files.
+
+
+(define (find-employee-record name set-list)
+  (let*
+      ((records (car set-list))
+       (record (get-record name records)))
+    (if (null? record)
+	(find-employee-record (cdr set-list))
+	record)))
+    
+			     
+
+;;d.  When Insatiable takes over a new company, what changes must be made in order to incorporate 
+;;the new personnel information into the central system? 
+
+
+;; they must be assigned a division number and most install all the above mentioned
+;; accessors for their specific record structure
+
+
+
+;;Exercise 2.75.  Implement the constructor make-from-mag-ang in message-passing style. This 
+;;procedure should be analogous to the make-from-real-imag procedure given above.
+
+
+(define (make-from-real-imag x y)
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) x)
+          ((eq? op 'imag-part) y)
+          ((eq? op 'magnitude)
+           (sqrt (+ (square x) (square y))))
+          ((eq? op 'angle) (atan y x))
+          (else
+           (error "Unknown op -- MAKE-FROM-REAL-IMAG" op))))
+  dispatch)
+
+
+(define (make-from-mag-ang r a)
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) (* r (cos a)))
+	  ((eq? op 'imag-part) (* r (sin a)))
+	  ((eq? op 'magintude) r)
+	  ((eq? op 'angle) a)
+	   (else
+           (error "Unknown op -- MAKE-FROM-mag-ang" op))))
+  dispatch)
+	  
+
+;;Exercise 2.76.  As a large system with generic operations evolves, new types of data objects or new 
+;;operations may be needed. For each of the three strategies -- generic operations with explicit dispatch, 
+;;data-directed style, and message-passing-style -- describe the changes that must be made to a system in 
+;;order to add new types or new operations. Which organization would be most appropriate for a system in 
+;;which new types must often be added? Which would be most appropriate for a system in which new operations 
+;;must often be added? 
+
+
+
+;; with message passing and data-directed style adding new operations will be more problematic as all the type
+;; definitions must be modified. on the other hand adding a new type is quite convenient. the inverse thing
+;; happens with explicit dispatch where adding operations is simple and adding a new type requires modification
+;; of all existing operations.
+
+
+
+
+;;Exercise 2.77.  Louis Reasoner tries to evaluate the expression (magnitude z) 
+;;where z is the object shown in ﬁgure 2.24. To his surprise, instead of the answer 5 he 
+;;gets an error message from apply-generic, saying there is no method for the 
+;;operation magnitude on the types (complex). He shows this interaction to Alyssa P. 
+;;Hacker, who says ``The problem is that the complex-number selectors were never 
+;;deﬁned for complex numbers, just for polar and rectangular numbers. All you 
+;;have to do to make this work is add the following to the complex package:'' 
+
+(put 'real-part '(complex) real-part) 
+(put 'imag-part '(complex) imag-part) 
+(put 'magnitude '(complex) magnitude) 
+(put 'angle '(complex) angle) 
+ 
+
+;;Describe in detail why this works. As an example, trace through all the procedures 
+;;called in evaluating the expression (magnitude z) where z is the object shown in 
+;;ﬁgure 2.24. In particular, how many times is apply-generic invoked? What 
+;;procedure is dispatched to in each case? 
+
+
+
+;;Exercise 2.78.  The internal procedures in the scheme-number package are 
+;;essentially nothing more than calls to the primitive procedures +, -, etc. It was not 
+;;possible to use the primitives of the language directly because our type-tag system 
+;;requires that each data object have a type attached to it. In fact, however, all Lisp 
+;;implementations do have a type system, which they use internally. Primitive 
+;;predicates such as symbol? and number? determine whether data objects have 
+;;particular types. Modify the deﬁnitions of type-tag, contents, and attach-tag 
+;;from section 2.4.2 so that our generic system takes advantage of Scheme's internal 
+;;type system. That is to say, the system should work as before except that ordinary 
+;;numbers should be represented simply as Scheme numbers rather than as pairs 
+;;whose car is the symbol scheme-number. 
+
+
+(define (attach-tag type-tag contents)
+  (if (equal? type-tag 'scheme-number)
+      contents
+      (cons type-tag contents)))
+
+
+(define (type-tag datum)
+  (cond ((pair? datum) (car datum))
+	((number? datum) 'number)
+	(else (error "Bad tagged datum -- TYPE-TAG" datum))))
+
+
+(define (contents datum)
+  (cond ((pair? datum) (cdr datum))
+	((number? datum) datum)
+	(else (error "Bad tagged datum -- CONTENTS" datum))))
+
+
+
+
+;;Exercise 2.79.  Deﬁne a generic equality predicate equ? that tests the equality of two 
+;;numbers, and install it in the generic arithmetic package. This operation should work 
+;;for ordinary numbers, rational numbers, and complex numbers. 
+
+(define (install-equ-package)
+  (put 'equ? '(scheme-number scheme-number)
+       (lambda (x y) (= x y)))
+  (put 'equ? '(rational rational)
+       (lambda (x y) (and (= (numer x) (numer y))
+			  (= (denom x) (denom y)))))
+  (put 'equ? '(complex complex)
+       (lambda (x y) (and (= (real-part x) (real-part y))
+			  (= (imag-part x) (imag-part y)))))
+  'done)
+
+
+
+
+
+
+;;Exercise 2.80.  Deﬁne a generic predicate =zero? that tests if its argument is zero, 
+;;and install it in the generic arithmetic package. This operation should work for 
+;;ordinary numbers, rational numbers, and complex numbers. 
+
+
+
+
+(define (install-zero-package)
+  (put '=zero? '(scheme-number)
+       (lambda (x) (= x 0)))
+  (put '=zero? '(rational)
+       (lambda (x) (= (numer x) 0)))
+  (put '=zero? '(complex)
+       (lambda (x) (and (= (real-part x) 0)
+			(= (imag-part x) 0))))
+  'done)
+
+
+
+
+
+
+;;Exercise 2.81.  Louis Reasoner has noticed that apply-generic may try to coerce 
+;;the arguments to each other's type even if they already have the same type. 
+;;Therefore, he reasons, we need to put procedures in the coercion table to "coerce" 
+;;arguments of each type to their own type. For example, in addition to the scheme- 
+;;number->complex coercion shown above, he would do: 
+
+(define (scheme-number->scheme-number n) n) 
+(define (complex->complex z) z) 
+(put-coercion 'scheme-number 'scheme-number 
+              scheme-number->scheme-number) 
+(put-coercion 'complex 'complex complex->complex) 
+
+;;a. With Louis's coercion procedures installed, what happens if apply-generic is 
+;;called with two arguments of type scheme-number or two arguments of type 
+;;complex for an operation that is not found in the table for those types? For example, 
+;;assume that we've deﬁned a generic exponentiation operation: 
+
+(define (exp x y) (apply-generic 'exp x y)) 
+
+;;and have put a procedure for exponentiation in the Scheme-number package but not 
+;;in any other package: 
+
+
+;; following added to Scheme-number package 
+(put 'exp '(scheme-number scheme-number) 
+     (lambda (x y) (tag (expt x y)))) ; using primitive expt 
+
+;;What happens if we call exp with two complex numbers as arguments? 
+
+;; it will throw an error as the exp procedure with complex numbers is not in the table
+;; e.g. No method for these types
+
+;;b. Is Louis correct that something had to be done about coercion with arguments of 
+;;the same type, or does apply-generic work correctly as is? 
+
+;; he is correct, apply-generic is broken as shown.
+
+
+;;c. Modify apply-generic so that it doesn't try coercion if the two arguments have 
+;;the same type. 
+
+
+
+
+(define (apply-generic op . args) 
+  (let ((type-tags (map type-tag args))) 
+    (let ((proc (get op type-tags))) 
+      (if proc 
+          (apply proc (map contents args)) 
+          (if (= (length args) 2) 
+              (let ((type1 (car type-tags)) 
+                    (type2 (cadr type-tags)) 
+                    (a1 (car args)) 
+                    (a2 (cadr args)))
+		(if (equal? type1 type2)
+		    (apply-generic op a1 a2)
+		    ((let ((t1->t2 (get-coercion type1 type2)) 
+			   (t2->t1 (get-coercion type2 type1))) 
+		       (cond (t1->t2 
+			      (apply-generic op (t1->t2 a1) a2)) 
+			     (t2->t1 
+			      (apply-generic op a1 (t2->t1 a2))) 
+			     (else 
+			      (error "No method for these types" 
+				     (list op type-tags)))))))) 
+		    (error "No method for these types" 
+			   (list op type-tags)))))))
+
+
+
+
+
+;;Exercise 2.82.  Show how to generalize apply-generic to handle coercion in the 
+;;general case of multiple arguments. One strategy is to attempt to coerce all the 
+;;arguments to the type of the ﬁrst argument, then to the type of the second argument, 
+;;and so on. Give an example of a situation where this strategy (and likewise the 
+;;two-argument version given above) is not sufﬁciently general. (Hint: Consider the 
+;;case where there are some suitable mixed-type operations present in the table that 
+;;will not be tried.) 
+ 
+;;get-coercion returns #f on fail?
+;; change to tail recurssion
+
+(define (apply-coercions coercions args)
+  (define (iter clist alist coerced)
+    (if (null? alist)
+	coerced
+	(iter (cdr clist) (cdr alist) (append coerced ((car clist) (car alist))))))
+  (iter coercion args '()))
+  
+
+
+(define (all-possible? . args)
+  (if (null? args)
+      #t
+      (if (car args) (all-pos? (cdr args)) #f)))
+
+
+(define (coerce-types . args)
+  (define (iter-co left right)
+    ((if (pair? (car left))
+      (let* ((type-now (type-tag (car left)))
+	     (coercion (lambda (x) (get-coercion (type-tag x) type-now)))
+	     (coercion-list (map coercion (append left right))))
+	(if (all-posible? coercion-list)
+	    (apply-coercions coercion-list (append left right))
+	    (iter-co (cdr left) (append right (car left)))))
+      #f)))
+  (iter-co args '()))
+    
+	 
+(define (apply-generic op . args) 
+  (let* ((type-tags (map type-tag args)) 
+	 ((proc (get op type-tags)))) 
+    (if proc 
+	(apply proc (map contents args))
+	(let (coerced (coerce-types args))
+	  (if coerced
+	      (apply-generic op coerced) 
+	      (error "No method for these types" 
+				   (list op type-tags)))))))
+	      
+
+
+
+;;Exercise 2.83.  Suppose you are designing a generic arithmetic system for dealing 
+;;with the tower of types shown in ﬁgure 2.25: integer, rational, real, complex. For 
+;;each type (except complex), design a procedure that raises objects of that type one 
+;;level in the tower. Show how to install a generic raise operation that will work for 
+;;each type (except complex). 
+
+
+
+
+(define (install-raise-package)
+  (put 'raise 'scheme-number
+       (lambda (x) ((get-coercion 'scheme-number 'rational) x)))
+  (put 'raise 'rational
+       (lambda (x) ((get-coercion 'rational 'complex) x)))
+  'done)
+
+
+
+;;Exercise 2.84.  Using the raise operation of exercise 2.83, modify the apply- 
+;;generic procedure so that it coerces its arguments to have the same type by the 
+;;method of successive raising, as discussed in this section. You will need to devise a 
+;;way to test which of two types is higher in the tower. Do this in a manner that is 
+;;``compatible'' with the rest of the system and will not lead to problems in adding 
+;;new levels to the tower. 
+
+
+(define tower (list 'scheme-number 'rational 'complex))
+
+(define (get-level a)
+  (define (iter levels count)
+    (if (pair? levels)
+	(if (equal? (type-tag a) (car levels))
+	    count
+	    (iter (cdr levels) (+1 count)))
+	  (error "type not installed")))
+  (iter tower 0))
+	
+  
+(define (levelify a1 a2)
+  (if (<= (get-level a2) (get-level a1))
+      a1
+      (levelify (raise a1) a2)))
+
+(define (apply-generic op . args) 
+  (let ((type-tags (map type-tag args))) 
+    (let ((proc (get op type-tags))) 
+      (if proc 
+          (apply proc (map contents args)) 
+          (if (= (length args) 2) 
+              (let* ((type1 (car type-tags)) 
+                    (type2 (cadr type-tags)) 
+                    (a1 (car args)) 
+                    (a2 (cadr args)))
+		(if (equal? type1 type2)
+		    (apply-generic op a1 a2)
+		    (apply-generic op (levelify a1 a2) (levelify a2 a1)))) 
+	      (error "No method for these types" 
+		     (list op type-tags)))))))
+
+
+;;Exercise 2.85.  This section mentioned a method for ``simplifying'' a data object by 
+;;lowering it in the tower of types as far as possible. Design a procedure drop that 
+;;accomplishes this for the tower described in exercise 2.83. The key is to decide, in 
+;;some general way, whether an object can be lowered. For example, the complex 
+;;number 1.5 + 0i can be lowered as far as real, the complex number 1 + 0i can be 
+;;lowered as far as integer, and the complex number 2 + 3i cannot be lowered at all. 
+;;Here is a plan for determining whether an object can be lowered: Begin by deﬁning a 
+;;generic operation project that ``pushes'' an object down in the tower. For example, 
+;;projecting a complex number would involve throwing away the imaginary part. 
+;;Then a number can be dropped if, when we project it and raise the result back to 
+;;the type we started with, we end up with something equal to what we started with. 
+;;Show how to implement this idea in detail, by writing a drop procedure that drops 
+;;an object as far as possible. You will need to design the various projection 
+;;operations53 and install project as a generic operation in the system. You will also 
+;;need to make use of a generic equality predicate, such as described in exercise 2.79. 
+;;Finally, use drop to rewrite apply-generic from exercise 2.84 so that it ``simpliﬁes'' 
+;;its answers. 
+
+
+
+
+(define (install-project-package)
+  (put 'project 'scheme-number
+       (lambda (x) x))
+  (put 'project 'rational
+       (lambda (x) (/ (+ (numer x) 0.0) (denom x))))
+  (put 'project 'complex
+       (lambda (x) (real-part x)))
+  'done)
+
+
+
+(define (drop z)
+  (if (equal? (type-tag z) 'scheme-number)
+      z
+      (if (equ? z (raise (project z)))
+	  (drop (project z))
+	  z)))
+    
+
+
+(define (apply-generic op . args) 
+  (let ((type-tags (map type-tag args))) 
+    (let ((proc (get op type-tags))) 
+      (if proc 
+          (apply proc (map contents args)) 
+          (if (= (length args) 2) 
+              (let* ((type1 (car type-tags)) 
+                    (type2 (cadr type-tags)) 
+                    (a1 (car args)) 
+                    (a2 (cadr args)))
+		(if (equal? type1 type2)
+		    (drop (apply-generic op a1 a2))
+		    (drop (apply-generic op (levelify a1 a2) (levelify a2 a1))))) 
+	      (error "No method for these types" 
+		     (list op type-tags)))))))
+
+
+;;Exercise 2.86.  Suppose we want to handle complex numbers whose real parts, 
+;;imaginary parts, magnitudes, and angles can be either ordinary numbers, rational 
+;;numbers, or other numbers we might wish to add to the system. Describe and 
+;;implement the changes to the system needed to accommodate this. You will have to 
+;;deﬁne operations such as sine and cosine that are generic over ordinary numbers 
+;;and rational numbers. 
+
+
+;; modify the complex number package as so:
+;; use add,sub,mil,div instead of prinitives
+;; sin, cos and atan need to be implemented using apply-generic
+
+(define (install-complex-package) 
+  ;; imported procedures from rectangular and polar packages 
+  (define (make-from-real-imag x y) 
+    ((get 'make-from-real-imag 'rectangular) x y)) 
+  (define (make-from-mag-ang r a) 
+    ((get 'make-from-mag-ang 'polar) r a)) 
+  ;; internal procedures 
+  (define (add-complex z1 z2) 
+    (make-from-real-imag (add (real-part z1) (real-part z2)) 
+                         (add (imag-part z1) (imag-part z2)))) 
+  (define (sub-complex z1 z2) 
+    (make-from-real-imag (sub (real-part z1) (real-part z2)) 
+                         (sub (imag-part z1) (imag-part z2)))) 
+  (define (mul-complex z1 z2) 
+    (make-from-mag-ang (mul (magnitude z1) (magnitude z2)) 
+                       (add (angle z1) (angle z2)))) 
+  (define (div-complex z1 z2) 
+    (make-from-mag-ang (div (magnitude z1) (magnitude z2)) 
+                       (min (angle z1) (angle z2)))) 
+  ;; interface to rest of the system 
+  (define (tag z) (attach-tag 'complex z)) 
+  (put 'add '(complex complex) 
+       (lambda (z1 z2) (tag (add-complex z1 z2)))) 
+  (put 'sub '(complex complex) 
+       (lambda (z1 z2) (tag (sub-complex z1 z2)))) 
+  (put 'mul '(complex complex) 
+       (lambda (z1 z2) (tag (mul-complex z1 z2)))) 
+  (put 'div '(complex complex) 
+       (lambda (z1 z2) (tag (div-complex z1 z2)))) 
+  (put 'make-from-real-imag 'complex 
+       (lambda (x y) (tag (make-from-real-imag x y)))) 
+  (put 'make-from-mag-ang 'complex 
+       (lambda (r a) (tag (make-from-mag-ang r a)))) 
+  'done) 
+
+
+
+
+;;Exercise 2.87.  Install =zero? for polynomials in the generic arithmetic package. 
+;;This will allow adjoin-term to work for polynomials with coefﬁcients that are 
+;;themselves polynomials. 
+
+
+(define (install-zero?-package)
+  (put '=zero? 'scheme-number
+       (lambda (x) (= x 0)))
+  (put '=zero? 'rational
+       (lambda (x) (= (numer x) 0)))
+  (put '=zero? 'polynomial
+       (lambda (x) (null? (term-list x))))
+  (put '=zero? '(complex)
+       (lambda (x) (and (= (real-part x) 0)
+			(= (imag-part x) 0))))
+  'done)
+
+
+
+
+;;Exercise 2.88.  Extend the polynomial system to include subtraction of polynomials. 
+;;(Hint: You may ﬁnd it helpful to deﬁne a generic negation operation.) 
+
+
+
+(define (install-polynomial-package) 
+  ;; internal procedures 
+  ;; representation of poly 
+  (define (make-poly variable term-list) 
+    (cons variable term-list)) 
+  (define (variable p) (car p)) 
+  (define (term-list p) (cdr p)) 
+  <procedures same-variable? and variable? from section 2.3.2> 
+  ;; representation of terms and term lists 
+  (define (adjoin-term term term-list) 
+    (if (=zero? (coeff term)) 
+	term-list 
+	(cons term term-list))) 
+  (define (the-empty-termlist) '()) 
+  (define (first-term term-list) (car term-list)) 
+  (define (rest-terms term-list) (cdr term-list)) 
+  (define (empty-termlist? term-list) (null? term-list)) 
+  (define (make-term order coeff) (list order coeff)) 
+  (define (order term) (car term)) 
+  (define (coeff term) (cadr term)) 
+
+ 
+
+  (define (neg L1)
+    (define (iter pos neg)
+      (if (empty-termlist? pos) 
+	  neg
+	  (let ((neg-term  (make-term 
+			    (order (first-term pos)) 
+			    (* (coeff (first-term pos)) -1))))
+	    (if (empty-termlist? neg)
+		(iter (cdr pos) (list neg-term))
+		(iter (cdr pos) (adjoin-term neg-term neg))))))
+    (iter L1 '()))
+
+  (define (add-terms L1 L2) 
+    (cond ((empty-termlist? L1) L2) 
+	  ((empty-termlist? L2) L1) 
+	  (else 
+	   (let ((t1 (first-term L1)) (t2 (first-term L2))) 
+	     (cond ((> (order t1) (order t2)) 
+		    (adjoin-term 
+		     t1 (add-terms (rest-terms L1) L2))) 
+		   ((< (order t1) (order t2)) 
+		    (adjoin-term 
+		     t2 (add-terms L1 (rest-terms L2)))) 
+		   (else 
+		    (adjoin-term 
+		     (make-term (order t1) 
+				(add (coeff t1) (coeff t2))) 
+		     (add-terms (rest-terms L1) 
+				(rest-terms L2))))))))) 
+  
+  (define (sub-poly p1 p2)
+    (if (same-variable? (variable p1) (variable p2))
+	(make-poly (variable p1)
+		   (add-terms (term-list p1) (neg (term-list p2))))
+	(error "Polys not in same var -- SUB-POLY" 
+	       (list p1 p2))))
+  (define (add-poly p1 p2) 
+    (if (same-variable? (variable p1) (variable p2)) 
+	(make-poly (variable p1) 
+		   (add-terms (term-list p1) 
+			      (term-list p2))) 
+	(error "Polys not in same var -- ADD-POLY" 
+	       (list p1 p2)))) 
+  (define (mul-poly p1 p2) 
+    (if (same-variable? (variable p1) (variable p2)) 
+	(make-poly (variable p1) 
+		   (mul-terms (term-list p1) 
+			      (term-list p2))) 
+	(error "Polys not in same var  -- MUL-POLY"
+	       (list p1 p2)))) 
+
+
+  
+  ;; interface to rest of the system 
+  (define (tag p) (attach-tag 'polynomial p)) 
+  (put 'add '(polynomial polynomial) 
+       (lambda (p1 p2) (tag (add-poly p1 p2)))) 
+  (put 'mul '(polynomial polynomial) 
+       (lambda (p1 p2) (tag (mul-poly p1 p2)))) 
+  (put 'make 'polynomial 
+       (lambda (var terms) (tag (make-poly var terms)))) 
+  'done) 
+
+
+
+;;Exercise 2.89.  Deﬁne procedures that implement the term-list representation 
+;;described above as appropriate for dense polynomials. 
+
+
+
+(define (install-polynomial-sparse-package) 
+  ;; internal procedures 
+  ;; representation of poly 
+  (define (make-poly variable term-list) 
+    (cons variable term-list)) 
+  (define (variable p) (car p)) 
+  (define (term-list p) (cdr p)) 
+  ;;<procedures same-variable? and variable? from section 2.3.2> 
+  ;; representation of terms and term lists 
+ 
+  (define (the-empty-termlist) '()) 
+  
+  (define (rest-terms term-list) (cdr term-list)) 
+  (define (empty-termlist? term-list) (null? term-list)) 
+  
+
+  (define (first-term term-list) (car term-list)) 
+
+
+   (define (adjoin-term term term-list) 
+    (if (=zero? (coeff term)) 
+	term-list 
+	(cons term term-list))) 
+
+  (define (make-term order coeff) (list order coeff)) 
+  (define (order term) (car term)) 
+  (define (coeff term) (cadr term)) 
+
+
+
+;;Exercise 2.90.  Suppose we want to have a polynomial system that is efﬁcient for 
+;;both sparse and dense polynomials. One way to do this is to allow both kinds of 
+;;term-list representations in our system. The situation is analogous to the complex- 
+;;number example of section 2.4, where we allowed both rectangular and polar 
+;;representations. To do this we must distinguish different types of term lists and make 
+;;the operations on term lists generic. Redesign the polynomial system to implement 
+;;this generalization. This is a major effort, not a local change. 
+;;both sparse and dense polynomials. One wa
+
+
+
+
+;;Exercise 2.91. 
+
+;;Complete the following deﬁnition of div-terms by ﬁlling in the missing 
+;;expressions. Use this to implement div-poly, which takes two polys as arguments 
+;;and returns a list of the quotient and remainder polys. 
+
+(define (div-terms L1 L2) 
+  (if (empty-termlist? L1) 
+      (list (the-empty-termlist) (the-empty-termlist)) 
+      (let ((t1 (first-term L1)) 
+            (t2 (first-term L2))) 
+        (if (> (order t2) (order t1)) 
+            (list (the-empty-termlist) L1) 
+            (let ((new-c (div (coeff t1) (coeff t2))) 
+                  (new-o (- (order t1) (order t2)))) 
+              (let ((rest-of-result 
+                     <compute rest of result recursively> 
+                     )) 
+                <form complete result> 
+                )))))) 
