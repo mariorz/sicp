@@ -159,7 +159,7 @@
 ;;means of Monte Carlo simulation. Consider computing the area of a region of space described 
 ;;by a predicate P(x, y) that is true for points (x, y) in the region and false for points not 
 ;;in the region. For example, the region contained within a circle of radius 3 centered at (5, 7) 
-;;is described by the predicate that tests whether (x - 5)2 + (y - 7)2< 32. To estimate the area 
+;;is described by the predicate that tests whether (x - 5)^2 + (y - 7)^2 < 32. To estimate the area 
 ;;of the region described by such a predicate, begin by choosing a rectangle that contains the 
 ;;region. For example, a rectangle with diagonally opposite corners at (2, 4) and (8, 10) contains 
 ;;the circle above. The desired integral is the area of that portion of the rectangle that lies in 
@@ -183,8 +183,15 @@
   (let ((range (- high low)))
     (+ low (random range))))
 
+(define (rect-area x1 x2 y1 y2)
+  (* (- x2 x1) (y2 y1))
+
+(define (reg-test p x1 x2 y1 y2)
+  (p (rand-in-range x1 x2) (rand-in-range y1 y2)))
 
 (define (estimate-integral p x1 x2 y1 y2 trials)
+  (* (rect-area x1 x2 y1 y2) 
+     (monter-carlo trials (reg-test p x1 x2 y1 y2))))
   
 
 
